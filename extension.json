@@ -1,0 +1,108 @@
+{
+	"name": "NewAnimeItem",
+	"version": "1.0.0",
+	"author": [
+		"Xiplus"
+	],
+	"url": "http://github.com/Xiplus-ACG/NewAnimeItem",
+	"descriptionmsg": "newanimeitem-desc",
+	"license-name": "",
+	"requires": {
+		"MediaWiki": ">= 1.35.0"
+	},
+	"type": "specialpage",
+	"ExtensionMessagesFiles": {
+		"NewAnimeItemAlias": "NewAnimeItem.alias.php"
+	},
+	"MessagesDirs": {
+		"NewAnimeItem": [
+			"i18n"
+		]
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "NewAnimeItem"
+	},
+	"SpecialPages": {
+		"NewAnimeItem": {
+			"class": "SpecialNewAnimeItem",
+			"factory": "SpecialNewAnimeItem::newFromGlobalState"
+		}
+	},
+	"AutoloadClasses": {
+		"SpecialNewAnimeItem": "includes/SpecialNewAnimeItem.php",
+		"NewAnimeItemHooks": "includes/NewAnimeItemHooks.php"
+	},
+	"config": {
+		"NewAnimeItemDefaultLanguageCode": {
+			"value": "zh-tw"
+		},
+		"NewAnimeItemTypeId": {
+			"value": "P3"
+		},
+		"NewAnimeItemTypeAnimeId": {
+			"value": "Q53"
+		},
+		"NewAnimeItemEpisodesSeenId": {
+			"value": "P28"
+		},
+		"NewAnimeItemEpisodesAllId": {
+			"value": "P27"
+		},
+		"NewAnimeItemStatusId": {
+			"value": "P31"
+		},
+		"NewAnimeItemStatusNotStartId": {
+			"value": "Q57"
+		},
+		"NewAnimeItemStatusPlayingId": {
+			"value": "Q56"
+		},
+		"NewAnimeItemStatusEndId": {
+			"value": "Q58"
+		},
+		"NewAnimeItemLengthId": {
+			"value": "P25"
+		},
+		"NewAnimeItemLengthMinute": {
+			"value": "https://xiplus.ddns.net/entity/Q54"
+		},
+		"NewAnimeItemZhwptitleId": {
+			"value": "P68"
+		},
+		"NewAnimeItemGamerlinkId": {
+			"value": "P1"
+		},
+		"NewAnimeItemRatingId": {
+			"value": "P23"
+		},
+		"NewAnimeItemRating0Id": {
+			"value": "Q46"
+		},
+		"NewAnimeItemRating6Id": {
+			"value": "Q47"
+		},
+		"NewAnimeItemRating12Id": {
+			"value": "Q48"
+		},
+		"NewAnimeItemRating15Id": {
+			"value": "Q49"
+		},
+		"NewAnimeItemRating18Id": {
+			"value": "Q50"
+		},
+		"NewAnimeItemYearId": {
+			"value": "P29"
+		},
+		"NewAnimeItemVideoGamerId": {
+			"value": "P34"
+		},
+		"NewAnimeItemVideoAnime1Id": {
+			"value": "P38"
+		},
+		"NewAnimeItemVideoAgeId": {
+			"value": "P76"
+		}
+	},
+	"manifest_version": 2
+}
