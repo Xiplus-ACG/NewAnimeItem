@@ -4,6 +4,7 @@
 			"Xiplus"
 		]
 	},
-	"special-newanimeitem": "建立動畫項目",
-	"newanimeitem-desc": "建立動畫項目特殊頁面"
+	"newanimeitem": "建立動畫項目",
+	"newanimeitem-desc": "建立動畫項目特殊頁面",
+	"newanimeitem-create-summary": "建立新動畫"
 }

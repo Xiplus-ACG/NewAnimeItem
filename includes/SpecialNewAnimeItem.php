@@ -33,30 +33,13 @@ use Wikibase\Repo\WikibaseRepo;
  * @license GPL-2.0-or-later
  * @author John Erling Blad < jeblad@gmail.com >, Xiplus
  */
-class SpecialNewAnimeItem extends SpecialNewEntity {
+class SpecialNewAnimeItem extends SpecialPage {
 
-	public function __construct(
-		SpecialPageCopyrightView $copyrightView,
-		EntityNamespaceLookup $entityNamespaceLookup,
-		SummaryFormatter $summaryFormatter,
-		EntityTitleLookup $entityTitleLookup,
-		MediawikiEditEntityFactory $editEntityFactory,
-		SiteLookup $siteLookup,
-		TermValidatorFactory $termValidatorFactory,
-		TermsCollisionDetector $termsCollisionDetector
-	) {
+	public function __construct() {
 		parent::__construct(
 			'NewAnimeItem',
-			'createpage',
-			$copyrightView,
-			$entityNamespaceLookup,
-			$summaryFormatter,
-			$entityTitleLookup,
-			$editEntityFactory
+			'createpage'
 		);
-		$this->siteLookup = $siteLookup;
-		$this->termValidatorFactory = $termValidatorFactory;
-		$this->termsCollisionDetector = $termsCollisionDetector;
 
 		$wikibaseRepo = WikibaseRepo::getDefaultInstance();
 		$this->entityLookup = $wikibaseRepo->getEntityLookup( Store::LOOKUP_CACHING_RETRIEVE_ONLY );
@@ -64,31 +47,7 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 		$this->config = MediaWikiServices::getInstance()->getMainConfig();
 	}
 
-	public static function newFromGlobalState(): self {
-		$wikibaseRepo = WikibaseRepo::getDefaultInstance();
-
-		$settings = $wikibaseRepo->getSettings();
-		$copyrightView = new SpecialPageCopyrightView(
-			new CopyrightMessageBuilder(),
-			$settings->getSetting( 'dataRightsUrl' ),
-			$settings->getSetting( 'dataRightsText' )
-		);
-
-		return new self(
-			$copyrightView,
-			$wikibaseRepo->getEntityNamespaceLookup(),
-			$wikibaseRepo->getSummaryFormatter(),
-			$wikibaseRepo->getEntityTitleLookup(),
-			$wikibaseRepo->newEditEntityFactory(),
-			$wikibaseRepo->getSiteLookup(),
-			$wikibaseRepo->getTermValidatorFactory(),
-			$wikibaseRepo->getItemTermsCollisionDetector()
-		);
-	}
-
 	/**
-	 * @see SpecialNewEntity::doesWrites
-	 *
 	 * @return bool
 	 */
 	public function doesWrites() {
@@ -96,8 +55,6 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 	}
 
 	/**
-	 * @see SpecialNewEntity::createEntityFromFormData
-	 *
 	 * @param array $formData
 	 *
 	 * @return Item
@@ -105,94 +62,181 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 	protected function createEntityFromFormData( array $formData ) {
 		$languageCode = $this->config->get('NewAnimeItemDefaultLanguageCode');
 
-		$item = new Item();
-		$item->setLabel( $languageCode, $formData['animename'] );
-		$item->setDescription( $languageCode, '' );
-		$item->setAliases( $languageCode, [] );
+		$item = [
+			'labels' => [],
+			'claims' => []
+		];
+		$item['labels'][$languageCode] = [
+			'language' => $languageCode,
+			'value' => $formData['animename']
+		];
 
-		$statementList = new StatementList();
+		$item['claims'][] = [
+            'mainsnak' => [
+                'snaktype' => 'value',
+                'property' => $this->config->get('NewAnimeItemTypeId'),
+                'datavalue' => [
+                    'value' => [
+                        'entity-type' => 'item',
+                        // 'numeric-id' => 53,
+                        'id' => $this->config->get('NewAnimeItemTypeAnimeId'),
+                    ],
+                    'type' => 'wikibase-entityid',
+                ],
+                'datatype' => 'wikibase-item',
+            ],
+            'type' => 'statement',
+            'rank' => 'normal',
+        ];
 
-		$statementList->addNewStatement(
-			new PropertyValueSnak(
-				new PropertyId($this->config->get('NewAnimeItemTypeId')),
-				new EntityIdValue(new ItemId($this->config->get('NewAnimeItemTypeAnimeId')))
-			)
-		);
+		$item['claims'][] = [
+			'mainsnak' => [
+                'snaktype' => 'value',
+                'property' => $this->config->get('NewAnimeItemEpisodesSeenId'),
+                'datavalue' => [
+                    'value' => [
+                        'amount' => '+' . $formData['seen'],
+                        'unit' => '1',
+                    ],
+                    'type' => 'quantity',
+                ],
+                'datatype' => 'quantity',
+            ],
+            'type' => 'statement',
+            'rank' => 'normal',
+        ];
 
-		$statementList->addNewStatement(
-			new PropertyValueSnak(
-				new PropertyId($this->config->get('NewAnimeItemEpisodesSeenId')),
-				new UnboundedQuantityValue(new DecimalValue($formData['seen']), "1")
-			)
-		);
+		$item['claims'][] = [
+			'mainsnak' => [
+                'snaktype' => 'value',
+                'property' => $this->config->get('NewAnimeItemEpisodesAllId'),
+                'datavalue' => [
+                    'value' => [
+                        'amount' => '+' . $formData['episodes'],
+                        'unit' => '1',
+                    ],
+                    'type' => 'quantity',
+                ],
+                'datatype' => 'quantity',
+            ],
+            'type' => 'statement',
+            'rank' => 'normal',
+        ];
 
-		$statementList->addNewStatement(
-			new PropertyValueSnak(
-				new PropertyId($this->config->get('NewAnimeItemEpisodesAllId')),
-				new UnboundedQuantityValue(new DecimalValue($formData['episodes']), "1")
-			)
-		);
+		$item['claims'][] = [
+            'mainsnak' => [
+                'snaktype' => 'value',
+                'property' => $this->config->get('NewAnimeItemStatusId'),
+                'datavalue' => [
+                    'value' => [
+                        'entity-type' => 'item',
+                        // 'numeric-id' => 56,
+                        'id' => $formData['status'],
+                    ],
+                    'type' => 'wikibase-entityid',
+                ],
+                'datatype' => 'wikibase-item',
+            ],
+            'type' => 'statement',
+            'rank' => 'normal',
+        ];
 
-		$statementList->addNewStatement(
-			new PropertyValueSnak(
-				new PropertyId($this->config->get('NewAnimeItemStatusId')),
-				new EntityIdValue(new ItemId($formData['status']))
-			)
-		);
-
-		$statementList->addNewStatement(
-			new PropertyValueSnak(
-				new PropertyId($this->config->get('NewAnimeItemLengthId')),
-				new UnboundedQuantityValue(new DecimalValue($formData['length']), $this->config->get('NewAnimeItemLengthMinute'))
-			)
-		);
+		$item['claims'][] = [
+            'mainsnak' => [
+                'snaktype' => 'value',
+                'property' => $this->config->get('NewAnimeItemLengthId'),
+                'datavalue' => [
+                    'value' => [
+                        'amount' => '+' . $formData['length'],
+                        'unit' => $this->config->get('NewAnimeItemLengthMinute'),
+                    ],
+                    'type' => 'quantity',
+                ],
+                'datatype' => 'quantity',
+            ],
+            'type' => 'statement',
+            'rank' => 'normal',
+        ];
 
 		if ($formData['zhwptitle']) {
-			$statementList->addNewStatement(
-				new PropertyValueSnak(
-					new PropertyId($this->config->get('NewAnimeItemZhwptitleId')),
-					new StringValue($formData['zhwptitle'])
-				)
-			);
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemZhwptitleId'),
+					'datavalue' => [
+						'value' => $formData['zhwptitle'],
+						'type' => 'string',
+					],
+					'datatype' => 'external-id',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
 		}
 
 		if ($formData['gamerlink']) {
-			$statementList->addNewStatement(
-				new PropertyValueSnak(
-					new PropertyId($this->config->get('NewAnimeItemGamerlinkId')),
-					new StringValue($formData['gamerlink'])
-				)
-			);
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemGamerlinkId'),
+					'datavalue' => [
+						'value' => $formData['gamerlink'],
+						'type' => 'string',
+					],
+					'datatype' => 'url',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
 		}
 
 		if ($formData['videogamer']) {
-			$statementList->addNewStatement(
-				new PropertyValueSnak(
-					new PropertyId($this->config->get('NewAnimeItemVideoGamerId')),
-					new StringValue($formData['videogamer'])
-				)
-			);
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemVideoGamerId'),
+					'datavalue' => [
+						'value' => $formData['videogamer'],
+						'type' => 'string',
+					],
+					'datatype' => 'url',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
 		}
 
 		if ($formData['videoanime1']) {
-			$statementList->addNewStatement(
-				new PropertyValueSnak(
-					new PropertyId($this->config->get('NewAnimeItemVideoAnime1Id')),
-					new StringValue($formData['videoanime1'])
-				)
-			);
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemVideoAnime1Id'),
+					'datavalue' => [
+						'value' => $formData['videoanime1'],
+						'type' => 'string',
+					],
+					'datatype' => 'url',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
 		}
 
 		if ($formData['videoage']) {
-			$statementList->addNewStatement(
-				new PropertyValueSnak(
-					new PropertyId($this->config->get('NewAnimeItemVideoAgeId')),
-					new StringValue($formData['videoage'])
-				)
-			);
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemVideoAgeId'),
+					'datavalue' => [
+						'value' => $formData['videoage'],
+						'type' => 'string',
+					],
+					'datatype' => 'url',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
 		}
-
-		$item->setStatements($statementList);
 
 		return $item;
 	}
@@ -321,24 +365,6 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 		return $formFields;
 	}
 
-	/**
-	 * @see SpecialNewEntity::getLegend
-	 *
-	 * @return string|Message $msg Message key or Message object
-	 */
-	protected function getLegend() {
-		return $this->msg( 'wikibase-newitem-fieldset' );
-	}
-
-	/**
-	 * @see SpecialNewEntity::getWarnings
-	 *
-	 * @return string[]
-	 */
-	protected function getWarnings() {
-		return [];
-	}
-
 	private function createForm() {
 		$out = $this->getOutput();
 
@@ -373,7 +399,7 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 		HTMLForm::factory( 'ooui', $this->getFormFields(), $this->getContext() )
 			->setName( 'newanimeitem' )
 			->setFormIdentifier( 'newanimeitem' )
-			->setWrapperLegendMsg( 'special-newanimeitem' )
+			->setWrapperLegendMsg( 'newanimeitem' )
 			->suppressDefaultSubmit( true )
 			->addHiddenField( 'wpEditToken', $this->getUser()->getEditToken() )
 			->prepareForm()
@@ -386,50 +412,27 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 
 		$entity = $this->createEntityFromFormData( $this->getPostData() );
 
-		$summary = $this->createSummary( $entity );
-
-		$this->prepareEditEntity();
-		$saveStatus = $this->saveEntity(
-			$entity,
-			$summary,
-			$this->getRequest()->getRawVal( 'wpEditToken' ),
-			EDIT_NEW
+		$api = new ApiMain(
+			new DerivativeRequest(
+				$this->getRequest(), // Fallback upon $wgRequest if you can't access context
+				array(
+					'action'  => 'wbeditentity',
+					'new'     =>'item',
+					'data'    => json_encode($entity),
+					'token'   => $this->getRequest()->getVal( 'wpEditToken' ),
+					'summary' => wfMessage('newanimeitem-create-summary'),
+				),
+				true // treat this as a POST
+			),
+			true // Enable write.
 		);
+		$api->execute();
 
-		if ( $saveStatus && $saveStatus->isGood() ) {
-			$title = $this->getEntityTitle( $entity->getId() );
-			$entityUrl = $title->getFullURL();
-			$this->getOutput()->redirect( $entityUrl );
-			return;
-		}
+		$resultData = $api->getResult()->getResultData();
 
-		$this->createForm();
-	}
-
-	/**
-	 * @param array $formData
-	 *
-	 * @return Status
-	 */
-	protected function validateFormData( array $formData ) {
-		return Status::newGood();
-	}
-
-	protected function createSummary( EntityDocument $item ) {
-		$uiLanguageCode = $this->getLanguage()->getCode();
-
-		$summary = new Summary( 'wbeditentity', 'create' );
-		$summary->setLanguage( $uiLanguageCode );
-		/** @var Term|null $labelTerm */
-		$labelTerm = $item->getLabels()->getIterator()->current();
-		/** @var Term|null $descriptionTerm */
-		$descriptionTerm = $item->getDescriptions()->getIterator()->current();
-		$summary->addAutoSummaryArgs(
-			$labelTerm ? $labelTerm->getText() : '',
-			$descriptionTerm ? $descriptionTerm->getText() : ''
-		);
-
-		return $summary;
+		$title = Title::newFromDBkey('Item:' . $resultData['entity']['id']); // TODO: Get namespace from config
+		$entityUrl = $title->getFullURL();
+		$this->getOutput()->redirect( $entityUrl );
 	}
 
 	private function getPostData() {
@@ -450,11 +453,13 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 		$data['videoage'] = trim( $req->getText( 'videoage' ) );
 
 		if ($data['zhwptitle'] === '') {
-			$data['zhwptitle'] = $this->getZhwptitleByName($data['animename']);
+			if ($data['animename'] !== '') {
+				$data['zhwptitle'] = $this->getZhwptitleByName($data['animename']);
+			}
 		} else {
 			$data['zhwptitle'] = $this->getZhwptitleByName($data['zhwptitle']); // Normalize
 		}
-		if ($data['gamerlink'] === '') {
+		if ($data['gamerlink'] === '' && $data['animename'] !== '') {
 			$data['gamerlink'] = $this->getGamerlinkByName($data['animename']);
 		}
 		if ($data['videogamer'] === '' && $data['gamerlink'] !== '') {
@@ -489,7 +494,7 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 			if (isset($page['missing'])) {
 				return null;
 			}
-			return $page['title'];
+			return str_replace(' ', '_', $page['title']);
 		}
 	}
 
@@ -538,7 +543,7 @@ class SpecialNewAnimeItem extends SpecialNewEntity {
 		return $labels->toTextArray()[$languageCode];
 	}
 
-	protected function getEntityType() {
-		return Item::ENTITY_TYPE;
+	protected function getGroupName() {
+		return 'wikibase';
 	}
 }

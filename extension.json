@@ -25,13 +25,11 @@
 	},
 	"SpecialPages": {
 		"NewAnimeItem": {
-			"class": "SpecialNewAnimeItem",
-			"factory": "SpecialNewAnimeItem::newFromGlobalState"
+			"class": "SpecialNewAnimeItem"
 		}
 	},
 	"AutoloadClasses": {
-		"SpecialNewAnimeItem": "includes/SpecialNewAnimeItem.php",
-		"NewAnimeItemHooks": "includes/NewAnimeItemHooks.php"
+		"SpecialNewAnimeItem": "includes/SpecialNewAnimeItem.php"
 	},
 	"config": {
 		"NewAnimeItemDefaultLanguageCode": {
