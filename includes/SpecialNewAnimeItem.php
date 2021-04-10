@@ -376,24 +376,11 @@ class SpecialNewAnimeItem extends SpecialPage {
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemEpisodesAllId')) . "：" . $data['episodes'] . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemStatusId')) . "：" . $this->getLabelById($data['status']) . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemLengthId')) . "：" . $data['length']  . "\n";
-		if ($data['zhwptitle']) {
-			$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemZhwptitleId')) . "：https://zh.wikipedia.org/wiki/" . $data['zhwptitle'] . "\n";
-		}
-		if ($data['gamerlink']) {
-			$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemGamerlinkId')) . "：" . $data['gamerlink'] . "\n";
-		}
-		if ($data['year']) {
-			$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemYearId')) . "：" . $data['year'] . "\n";
-		}
-		if ($data['videogamer']) {
-			$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoGamerId')) . "：" . $data['videogamer'] . "\n";
-		}
-		if ($data['videoanime1']) {
-			$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoAnime1Id')) . "：" . $data['videoanime1'] . "\n";
-		}
-		if ($data['videoage']) {
-			$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoAgeId')) . "：" . $data['videoage'] . "\n";
-		}
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemZhwptitleId')) . "：" . ($data['zhwptitle'] ? "https://zh.wikipedia.org/wiki/" . $data['zhwptitle'] : "無") . "\n";
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemGamerlinkId')) . "：" . ($data['gamerlink'] ?: "無") . "\n";
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoGamerId')) . "：" . ($data['videogamer'] ?: "無") . "\n";
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoAnime1Id')) . "：" . ($data['videoanime1'] ?: "無") . "\n";
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoAgeId')) . "：" . ($data['videoage'] ?: "無") . "\n";
 		$out->addWikiTextAsInterface($previewText);
 
 		HTMLForm::factory( 'ooui', $this->getFormFields(), $this->getContext() )
