@@ -78,7 +78,6 @@ class SpecialNewAnimeItem extends SpecialPage {
                 'datavalue' => [
                     'value' => [
                         'entity-type' => 'item',
-                        // 'numeric-id' => 53,
                         'id' => $this->config->get('NewAnimeItemTypeAnimeId'),
                     ],
                     'type' => 'wikibase-entityid',
@@ -130,7 +129,6 @@ class SpecialNewAnimeItem extends SpecialPage {
                 'datavalue' => [
                     'value' => [
                         'entity-type' => 'item',
-                        // 'numeric-id' => 56,
                         'id' => $formData['status'],
                     ],
                     'type' => 'wikibase-entityid',
@@ -157,6 +155,48 @@ class SpecialNewAnimeItem extends SpecialPage {
             'type' => 'statement',
             'rank' => 'normal',
         ];
+
+		if ($formData['rundate']) {
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemRundateId'),
+					'datavalue' => [
+						'value' => [
+							'time' => '+' . $formData['rundate'] . 'T00:00:00Z',
+							'timezone' => 0,
+							'before' => 0,
+							'after' => 0,
+							'precision' => 11,
+							'calendarmodel' => $this->config->get('NewAnimeItemCalendarModel')
+						],
+						'type' => 'time',
+					],
+					'datatype' => 'time',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
+		}
+
+		if ($formData['rating']) {
+			$item['claims'][] = [
+				'mainsnak' => [
+					'snaktype' => 'value',
+					'property' => $this->config->get('NewAnimeItemRatingId'),
+					'datavalue' => [
+						'value' => [
+							'entity-type' => 'item',
+							'id' => $formData['rating'],
+						],
+						'type' => 'wikibase-entityid',
+					],
+					'datatype' => 'wikibase-item',
+				],
+				'type' => 'statement',
+				'rank' => 'normal',
+			];
+		}
 
 		if ($formData['zhwptitle']) {
 			$item['claims'][] = [
@@ -313,6 +353,27 @@ class SpecialNewAnimeItem extends SpecialPage {
 				'type' => 'int',
 				'name' => 'length'
 			],
+			'rundate' => [
+				'id' => 'newanimeitem-rundate',
+				'label' => $this->getLabelById($this->config->get('NewAnimeItemRundateId')),
+				'type' => 'date',
+				'name' => 'rundate'
+			],
+			'rating' => [
+				'id' => 'newanimeitem-rating',
+				'label' => $this->getLabelById($this->config->get('NewAnimeItemRatingId')),
+				'type' => 'select',
+				'options' => [
+					'無' => '',
+					$this->getLabelById($this->config->get('NewAnimeItemRating0Id')) => $this->config->get('NewAnimeItemRating0Id'),
+					$this->getLabelById($this->config->get('NewAnimeItemRating6Id')) => $this->config->get('NewAnimeItemRating6Id'),
+					$this->getLabelById($this->config->get('NewAnimeItemRating12Id')) => $this->config->get('NewAnimeItemRating12Id'),
+					$this->getLabelById($this->config->get('NewAnimeItemRating15Id')) => $this->config->get('NewAnimeItemRating15Id'),
+					$this->getLabelById($this->config->get('NewAnimeItemRating18Id')) => $this->config->get('NewAnimeItemRating18Id'),
+				],
+				'default' => '',
+				'name' => 'rating'
+			],
 			'zhwptitle' => [
 				'id' => 'newanimeitem-zhwptitle',
 				'default' => $data['zhwptitle'],
@@ -376,6 +437,8 @@ class SpecialNewAnimeItem extends SpecialPage {
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemEpisodesAllId')) . "：" . $data['episodes'] . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemStatusId')) . "：" . $this->getLabelById($data['status']) . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemLengthId')) . "：" . $data['length']  . "\n";
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemRundateId')) . "：" . ($data['rundate'] ?: "無")  . "\n";
+		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemRatingId')) . "：" . ($data['rating'] ? $this->getLabelById($data['rating']) : "無")  . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemZhwptitleId')) . "：" . ($data['zhwptitle'] ? "https://zh.wikipedia.org/wiki/" . $data['zhwptitle'] : "無") . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemGamerlinkId')) . "：" . ($data['gamerlink'] ?: "無") . "\n";
 		$previewText .= "* " . $this->getLabelById($this->config->get('NewAnimeItemVideoGamerId')) . "：" . ($data['videogamer'] ?: "無") . "\n";
@@ -433,6 +496,8 @@ class SpecialNewAnimeItem extends SpecialPage {
 		$data['episodes'] = $req->getInt( 'episodes', 1 );
 		$data['status'] = trim( $req->getText( 'status' ) ) ?: $this->config->get('NewAnimeItemStatusPlayingId');
 		$data['length'] = $req->getInt( 'length', 24 );
+		$data['rundate'] = $req->getText( 'rundate', '' );
+		$data['rating'] = $req->getText( 'rating', '' );
 		$data['zhwptitle'] = trim( $req->getText( 'zhwptitle' ) );
 		$data['gamerlink'] = trim( $req->getText( 'gamerlink' ) );
 		$data['videogamer'] = trim( $req->getText( 'videogamer' ) );
@@ -449,9 +514,27 @@ class SpecialNewAnimeItem extends SpecialPage {
 		if ($data['gamerlink'] === '' && $data['animename'] !== '') {
 			$data['gamerlink'] = $this->getGamerlinkByName($data['animename']);
 		}
-		if ($data['videogamer'] === '' && $data['gamerlink'] !== '') {
-			$temp = $this->getGamerInfo($data['gamerlink']);
-			$data['videogamer'] = $temp['video'];
+		if ($data['gamerlink'] !== '') {
+			$gamerInfo = $this->getGamerInfo($data['gamerlink']);
+
+			if ($data['rundate'] === '' && isset($gamerInfo['rundate'])) {
+				$data['rundate'] = $gamerInfo['rundate'];
+			}
+
+			if ($data['rating'] === '' && isset($gamerInfo['rating'])) {
+				$RATING_ITEM = [
+					0 => $this->config->get('NewAnimeItemRating0Id'),
+					6 => $this->config->get('NewAnimeItemRating6Id'),
+					12 => $this->config->get('NewAnimeItemRating12Id'),
+					15 => $this->config->get('NewAnimeItemRating15Id'),
+					18 => $this->config->get('NewAnimeItemRating18Id'),
+				];
+				$data['rating'] = $RATING_ITEM[$gamerInfo['rating']];
+			}
+
+			if ($data['videogamer'] === '' && isset($gamerInfo['video'])) {
+				$data['videogamer'] = $gamerInfo['video'];
+			}
 		}
 
 		return $data;
@@ -490,7 +573,6 @@ class SpecialNewAnimeItem extends SpecialPage {
 			'kw' => $animename,
 			's' => 1
 		]);
-		// $gamerres = $http->get($gamerurl);
 		$gamerres = file_get_contents($gamerurl);
 
 		if (preg_match('/\[ 動畫 \]\n<a target="_blank" href="([^"]+?)"/', $gamerres, $m)) {
@@ -505,11 +587,24 @@ class SpecialNewAnimeItem extends SpecialPage {
 
 		$data = [];
 
-		if (preg_match('/當地(?:首播|發售)：(\d{4})-(\d{2})-(\d{2})/', $res, $m)) {
-			$data['year'] = $m[1] . $m[2] . $m[3];
+		if (preg_match('/當地(?:首播|發售)：(\d{4}-\d{2}-\d{2})/', $res, $m)) {
+			$data['rundate'] = $m[1];
 		}
 		if (preg_match('/<div class="seasonACG"><ul><li><a href="([^"]*?)"/', $res, $m)) {
 			$data['video'] = 'https:' . $m[1];
+		}
+
+		$RATING_IMG = [
+			'ALL' => 0,
+			'6TO12' => 6,
+			'12TO18' => 12,
+			'15TO18' => 15,
+			'18UP' => 18,
+		];
+		if (preg_match('/<img src="https:\/\/i2.bahamut.com.tw\/acg\/TW-(.+?).gif"/', $res, $m)) {
+			if (isset($RATING_IMG[$m[1]])) {
+				$data['rating'] = $RATING_IMG[$m[1]];
+			}
 		}
 
 		return $data;
