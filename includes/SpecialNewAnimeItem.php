@@ -356,7 +356,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 			'rundate' => [
 				'id' => 'newanimeitem-rundate',
 				'label' => $this->getLabelById($this->config->get('NewAnimeItemRundateId')),
-				'type' => 'date',
+				'type' => 'text',
 				'name' => 'rundate'
 			],
 			'rating' => [
@@ -385,7 +385,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 				'id' => 'newanimeitem-gamerlink',
 				'default' => $data['gamerlink'],
 				'label' => $this->getLabelById($this->config->get('NewAnimeItemGamerlinkId')),
-				'type' => 'url',
+				'type' => 'text',
 				'name' => 'gamerlink'
 			],
 			'videogamer' => [
@@ -534,6 +534,12 @@ class SpecialNewAnimeItem extends SpecialPage {
 
 			if ($data['videogamer'] === '' && isset($gamerInfo['video'])) {
 				$data['videogamer'] = $gamerInfo['video'];
+			}
+		}
+
+		foreach ($data as $key => $value) {
+			if ($value === '-') {
+				$data[$key] = '';
 			}
 		}
 
