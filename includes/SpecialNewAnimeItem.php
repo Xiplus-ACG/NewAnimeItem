@@ -180,7 +180,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 		}
 
 		if ($formData['rating']) {
-			$item['claims'][] = [
+			$claim = [
 				'mainsnak' => [
 					'snaktype' => 'value',
 					'property' => $this->config->get('NewAnimeItemRatingId'),
@@ -195,7 +195,25 @@ class SpecialNewAnimeItem extends SpecialPage {
 				],
 				'type' => 'statement',
 				'rank' => 'normal',
+				'references' => []
 			];
+			if (isset($formData['rating_ref_key']) && isset($formData['rating_ref_value'])) {
+				$claim['references'][] = [
+					'snaks' => [
+						[
+							'snaktype' => 'value',
+							'property' => $formData['rating_ref_key'],
+							'datavalue' => [
+								'value' => $formData['rating_ref_value'],
+								'type' => 'string'
+							],
+							'datatype' => 'url'
+						]
+					]
+				];
+
+			};
+			$item['claims'][] = $claim;
 		}
 
 		if ($formData['zhwptitle']) {
@@ -530,6 +548,8 @@ class SpecialNewAnimeItem extends SpecialPage {
 					18 => $this->config->get('NewAnimeItemRating18Id'),
 				];
 				$data['rating'] = $RATING_ITEM[$gamerInfo['rating']];
+				$data['rating_ref_key'] = $this->config->get('NewAnimeItemGamerlinkId');
+				$data['rating_ref_value'] = $data['gamerlink'];
 			}
 
 			if ($data['videogamer'] === '' && isset($gamerInfo['video'])) {
