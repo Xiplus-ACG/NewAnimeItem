@@ -368,7 +368,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 				'id' => 'newanimeitem-length',
 				'default' => 24,
 				'label' => $this->getLabelById($this->config->get('NewAnimeItemLengthId')),
-				'type' => 'int',
+				'type' => 'float',
 				'name' => 'length'
 			],
 			'rundate' => [
@@ -513,7 +513,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 		$data['seen'] = $req->getInt( 'seen', 1 );
 		$data['episodes'] = $req->getInt( 'episodes', 1 );
 		$data['status'] = trim( $req->getText( 'status' ) ) ?: $this->config->get('NewAnimeItemStatusPlayingId');
-		$data['length'] = $req->getInt( 'length', 24 );
+		$data['length'] = $req->getFloat( 'length', 24 );
 		$data['rundate'] = $req->getText( 'rundate', '' );
 		$data['rating'] = $req->getText( 'rating', '' );
 		$data['zhwptitle'] = trim( $req->getText( 'zhwptitle' ) );
