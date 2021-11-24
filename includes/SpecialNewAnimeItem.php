@@ -306,6 +306,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 	 */
 	public function execute( $subPage ) {
 		$this->setHeaders();
+		$this->checkPermissions();
 		$this->checkReadOnly();
 		$this->outputHeader();
 
