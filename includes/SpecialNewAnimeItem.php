@@ -41,8 +41,6 @@ class SpecialNewAnimeItem extends SpecialPage {
 			'createpage'
 		);
 
-		$wikibaseRepo = WikibaseRepo::getDefaultInstance();
-		$this->entityLookup = $wikibaseRepo->getEntityLookup( Store::LOOKUP_CACHING_RETRIEVE_ONLY );
 		$this->basicEntityIdParser = new BasicEntityIdParser();
 		$this->config = MediaWikiServices::getInstance()->getMainConfig();
 	}
@@ -646,7 +644,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 		$languageCode = $this->config->get('NewAnimeItemDefaultLanguageCode');
 
 		$entityId = $this->basicEntityIdParser->parse($id);
-		$entity = $this->entityLookup->getEntity($entityId);
+		$entity = WikibaseRepo::getEntityLookup()->getEntity($entityId);
 		$labels = $entity->getLabels();
 
 		return $labels->toTextArray()[$languageCode];
