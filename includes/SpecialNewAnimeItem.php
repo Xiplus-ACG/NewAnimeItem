@@ -523,7 +523,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 
 		if ($data['zhwptitle'] === '') {
 			if ($data['animename'] !== '') {
-				$data['zhwptitle'] = $this->getZhwptitleByName($data['animename']);
+				$data['zhwptitle'] = $this->getZhwptitleByName(str_replace(' ', '', $data['animename']));
 			}
 		} else {
 			$data['zhwptitle'] = $this->getZhwptitleByName($data['zhwptitle']); // Normalize
