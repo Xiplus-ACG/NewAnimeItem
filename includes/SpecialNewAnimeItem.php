@@ -529,7 +529,7 @@ class SpecialNewAnimeItem extends SpecialPage {
 			$data['zhwptitle'] = $this->getZhwptitleByName($data['zhwptitle']); // Normalize
 		}
 		if ($data['gamerlink'] === '' && $data['animename'] !== '') {
-			$data['gamerlink'] = $this->getGamerlinkByName($data['animename']);
+			$data['gamerlink'] = $this->getGamerlinkByName($data['animename']) ?: '';
 		}
 		if ($data['gamerlink'] !== '') {
 			$gamerInfo = $this->getGamerInfo($data['gamerlink']);
@@ -565,6 +565,20 @@ class SpecialNewAnimeItem extends SpecialPage {
 		return $data;
 	}
 
+	private function getWebContent($url, $headers = []) {
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		$response = curl_exec($ch);
+		curl_close($ch);
+		wfDebugLog('http', $url);
+		wfDebugLog('http', $response);
+		return $response;
+	}
+
 	private function getZhwptitleByName($animename) {
 		$http = MediaWikiServices::getInstance()->getHttpRequestFactory();
 
@@ -594,11 +608,16 @@ class SpecialNewAnimeItem extends SpecialPage {
 	}
 
 	private function getGamerlinkByName($animename) {
-		$gamerurl = 'https://acg.gamer.com.tw/search.php?' . http_build_query([
+		$gamerurl = 'https://104.16.223.104/search.php?' . http_build_query([
 			'kw' => $animename,
 			's' => 1
 		]);
-		$gamerres = file_get_contents($gamerurl);
+		$gamerres = $this->getWebContent($gamerurl, [
+			'Host: acg.gamer.com.tw',
+		]);
+		if ($gamerres === false) {
+			return null;
+		}
 
 		if (preg_match('/\[ 動畫 \]\n<a target="_blank" href="([^"]+?)"/', $gamerres, $m)) {
 			return 'https:' . $m[1];
@@ -608,7 +627,10 @@ class SpecialNewAnimeItem extends SpecialPage {
 	}
 
 	private function getGamerInfo($url) {
-		$res = file_get_contents($url);
+		$url = str_replace('https://acg.gamer.com.tw/', 'https://104.16.223.104/', $url);
+		$res = $this->getWebContent($url, [
+			'Host: acg.gamer.com.tw',
+		]);
 
 		$data = [];
 
